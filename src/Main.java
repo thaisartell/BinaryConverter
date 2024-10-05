@@ -1,9 +1,13 @@
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class Main {
     public static void main(String[] args) {
@@ -47,19 +51,39 @@ public class Main {
 
         ((AbstractDocument) input.getDocument()).setDocumentFilter(filter);
 
-        JLabel resultHeader = new JLabel("Decimal Result");
+        JLabel resultHeader = new JLabel("Unsigned Decimal Value:");
         resultHeader.setFont(labelFont);
         resultHeader.setBounds(175, 110, 375, 30);
 
         JLabel decimal = new JLabel();
-        decimal.setText(String.valueOf(bin_to_dec(input.toString())));
+        decimal.setText(String.valueOf(bin_to_dec(input.getText())));
         decimal.setFont(returnFont);
-        decimal.setBounds(175, 150, 375, 30);
+        decimal.setBounds(175, 140, 375, 30);
+
+        JLabel twosHeader = new JLabel("Two's Complement Decimal Value");
+        twosHeader.setFont(labelFont);
+        twosHeader.setBounds(175, 170, 425, 30);
+
+        JLabel twosDecimal = new JLabel();
+        twosDecimal.setText(String.valueOf(bin_to_twos(input.getText())));
+        twosDecimal.setFont(returnFont);
+        twosDecimal.setBounds(175, 200, 375, 30);
+
+        input.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e){
+                String binary = input.getText();
+                decimal.setText(String.valueOf(bin_to_dec(binary)));
+                twosDecimal.setText(String.valueOf(bin_to_twos(binary)));
+                panel.repaint();
+            }
+        });
 
         panel.add(intro);
         panel.add(input);
         panel.add(resultHeader);
+        panel.add(twosHeader);
         panel.add(decimal);
+        panel.add(twosDecimal);
         frame.add(panel);
         frame.setVisible(true);
     }
@@ -67,15 +91,29 @@ public class Main {
     // Convert binary value to decimal value
     private static int bin_to_dec(String bin) {
         int ans = 0;
-//        while(!bin.isEmpty()) {
-            for (int i = bin.length() - 1; i >= 0; i--) {
-                if (bin.charAt(i) == '0') {
-                    continue;
-                } else { // digit is 1
-                    ans += (2 ^ i);
+        if(!bin.isEmpty()) {
+            for (int i = 0; i < bin.length(); i++) {
+                if (bin.charAt(i) == '1') {
+                    ans += (int) Math.pow(2, bin.length() - 1 - i);
                 }
             }
-//        }
+        }
         return ans;
+    }
+
+    private static String bin_to_twos(String bin){
+        //11 = -1, 111 = -1, 100 = -4, 1000 = -8
+        int ans = 0;
+        String placeholder = "--Ineligible for Two's Complement--";
+        if (bin.length() > 1){
+            ans -= (int) Math.pow(2, bin.length() - 1);
+            for (int i = 1; i < bin.length(); i++){
+                if (bin.charAt(i) == '1'){
+                    ans += (int) Math.pow(2, bin.length() - 1 -i);
+                }
+            }
+            placeholder = String.valueOf(ans);
+        }
+        return placeholder;
     }
 }
